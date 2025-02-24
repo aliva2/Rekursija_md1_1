@@ -64,8 +64,6 @@ namespace Rekursija_md1_1
             }
         }
 
-
-
         // kvadrāts
         private void button2_Click(object sender, EventArgs e)
         {
@@ -96,7 +94,8 @@ namespace Rekursija_md1_1
             ));
 
             // pagriež pa 45 grādiem * (depth - 1)
-            float angle = 45f + 45f * (depth - 1); // katru reizi pa 45 grādiem
+            float angle = 45f + 45f * (depth - 1);
+
             Matrix matrix = new Matrix();
             matrix.RotateAt(angle, new PointF(cx, cy));  // griež apkārt centra punktam
             path.Transform(matrix);  // pieliek rotāciju ceļam

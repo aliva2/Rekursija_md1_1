@@ -14,15 +14,19 @@ namespace Rekursija_md1_1
 {
     public partial class Form1 : Form
     {
+        //grafika
         Graphics g;
+        //Aplim violeta, kvadrātam oranža krāsa
         Pen circlePen = new Pen(Color.Purple, 2); 
-        Pen squarePen = new Pen(Color.DarkGreen, 2);
+        Pen squarePen = new Pen(Color.DarkOrange, 2);
         int x, y;
         int w = 175; // platums sākumā
         int h = 175; // augstums sākumā
         public Form1()
         {
             InitializeComponent();
+            // ar kodu uzliek events, kad poga noklikšķināta (button click)
+            // bet var to dar;it arī design daļā vnk uzklikšķinot attiecīgai pogai
             this.button1.Click += new System.EventHandler(this.button1_Click);
             this.button2.Click += new System.EventHandler(this.button2_Click);
 
@@ -32,7 +36,7 @@ namespace Rekursija_md1_1
             g = panel1.CreateGraphics(); // veido vietu kur zīmēt, abus vienā
         }
 
-        // zīmēšanas rekursija aplim
+        // zīmēšanas rekursija aplim x, y, platums, garums, rekursija līmenis
         public void DrawCircleRecursion(int fx, int fy, int fw, int fh, int depth)
         {
             // zīmē apli
@@ -45,10 +49,10 @@ namespace Rekursija_md1_1
                 int smallerRadiusH = fh / 2;
 
                 //zīmē 4 jaunus apļus katrus 90 grādus
-                DrawCircleRecursion(fx + fw / 2 - smallerRadiusW / 2, fy - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 0 
-                DrawCircleRecursion(fx + fw - smallerRadiusW / 2, fy + fh / 2 - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 90
-                DrawCircleRecursion(fx + fw / 2 - smallerRadiusW / 2, fy + fh - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 180 
-                DrawCircleRecursion(fx - smallerRadiusW / 2, fy + fh / 2 - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 270 
+                DrawCircleRecursion(fx + fw / 2 - smallerRadiusW / 2, fy - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 0 grādi
+                DrawCircleRecursion(fx + fw - smallerRadiusW / 2, fy + fh / 2 - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 90 grādi
+                DrawCircleRecursion(fx + fw / 2 - smallerRadiusW / 2, fy + fh - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 180 grādi
+                DrawCircleRecursion(fx - smallerRadiusW / 2, fy + fh / 2 - smallerRadiusH / 2, smallerRadiusW, smallerRadiusH, depth - 1);  // 270 grādi
                  
             }
         }
@@ -56,7 +60,7 @@ namespace Rekursija_md1_1
         // aplis
         private void button1_Click(object sender, EventArgs e)
         {
-            int depth = int.Parse(textBox1.Text);
+            int depth = int.Parse(textBox1.Text); // nosaka rekursijas līmeni
             if (depth >= 1 && depth <= 5) // rekursijas līmeņi 1-5
             {
                 g.Clear(Form1.DefaultBackColor); // notīrīt pirms zīmēt jaunu
@@ -67,70 +71,61 @@ namespace Rekursija_md1_1
         // kvadrāts
         private void button2_Click(object sender, EventArgs e)
         {
-            int depth = int.Parse(textBox1.Text);
-            if (depth >= 1 && depth <= 8) // rekursijas līmeņi 1-8
+            // deklarē sākotnējo dziļumu. ko ievada lietotājs
+            int initialDepth = int.Parse(textBox1.Text);
+
+            if (initialDepth >= 1 && initialDepth <= 8) // rekursijas līmeņi 1-8
             {
                 g.Clear(Form1.DefaultBackColor); // notīrīt pirms zīmēt jaunu
-                DrawSquareRecursion(x, y, w, h, depth); // zīmēšanas rekursijas funkc kvadrātam
+                DrawSquareRecursion(x, y, w, h, initialDepth, initialDepth);
             }
         }
 
-        // kvadrāta rekursija
-        public void DrawSquareRecursion(int fx, int fy, int fw, int fh, int depth)
+        // kvadrāta rekursija !!! pieliek klāt pašreizējo līmeni un sākuma līmeni, nevis tikai vienu līmeni !!!
+        // tad ārējais kvadrāts būs vienmēr pagriezts 90 grādos
+        public void DrawSquareRecursion(float x, float y, float w, float h, int currentDepth, int initialDepth)
         {
-            // kvadrāta centrs
-            float cx = fx + fw / 2;
-            float cy = fy + fh / 2;
+            if (currentDepth < 1) return; // bāze
 
-            // ceļš kvadrāta zīmējumam
-            GraphicsPath path = new GraphicsPath();
+            // aprēķina centra punktus rotācijai
+            float centerX = x + w / 2f;
+            float centerY = y + h / 2f;
 
-            // pievieno to ceļam, konvertējot float uz int
-            path.AddRectangle(new Rectangle(
-                Convert.ToInt32(fx),
-                Convert.ToInt32(fy),
-                Convert.ToInt32(fw),
-                Convert.ToInt32(fh)
-            ));
-
-            // pagriež pa 45 grādiem * (depth - 1)
-            float angle = 45f + 45f * (depth - 1);
-
-            Matrix matrix = new Matrix();
-            matrix.RotateAt(angle, new PointF(cx, cy));  // griež apkārt centra punktam
-            path.Transform(matrix);  // pieliek rotāciju ceļam
-
-            // uzzīmē kvadrātu
-            g.DrawPath(squarePen, path);
-
-            // ja 2+ līmenis zīmē kvadrātu
-            if (depth > 1)
+            // GraphicsPath klase, ļauj veidot ar grafiskus ceļus, piemēram, kvadrātu,
+            // lai pievienotu taisnstūri (kvadrātu) ceļam, kuru vēlāk zīmēt uz ekrāna
+            using (GraphicsPath path = new GraphicsPath())
+            // Matrix ir klase, lai veiktu matemātiskas transformācijas (rotāciju uc.)
+            // uz grafiskiem objektiem. Pagriež kvadrātu par 45 leņķi
+            using (Matrix transform = new Matrix())
             {
-                // katrs nākamais kvadrāts būs mazāks 
-                float scaleFactor = (float)Math.Sqrt(2); // par cik samazināt
-                float smallerSizeW = fw / scaleFactor; // platuma samazināšana
-                float smallerSizeH = fh / scaleFactor; // augstuma samazināšana
+                // pievieno taisnstūri ceļam
+                path.AddRectangle(new RectangleF(x, y, w, h));
 
-                // jaunā kvadrāta novietojums
-                float offsetX = (fw - smallerSizeW) / 2; // horizontālā nobīde
-                float offsetY = (fh - smallerSizeH) / 2; // vertikālā nobīde
+                // aprēķina leņķi: 90° + 45° par katru jaunu rekursijas līmeni
+                // (līm ko ievada - pašreiz) lai pagrieztu par 45 vai ne (45 0 45 0 utt.)
+                float angle = 90f + 45f * (initialDepth - currentDepth);
 
-                // mazāko zīmē pagrieztu 45 grādus, visus pārvērš par int, jo float neder
-                DrawSquareRecursion(
-                    Convert.ToInt32(fx + offsetX), 
-                    Convert.ToInt32(fy + offsetY), 
-                    Convert.ToInt32(smallerSizeW), 
-                    Convert.ToInt32(smallerSizeH), 
-                    depth - 1
-                );
+                // pielieto rotāciju ap centru
+                transform.RotateAt(angle, new PointF(centerX, centerY));
+                // piemēro pagriešanu ceļam pirms zīmēšanas
+                path.Transform(transform);
+
+                // zīmē kvadrātu ar oranžo zīmuli
+                g.DrawPath(squarePen, path);
+
+                // aprēķina nākamo izmēru, par kvadrātsakni ar 2 mazāku, lai ielīstu iepriekšējā kvadrātā mpagriezies
+                float scale = (float)Math.Sqrt(2);
+                float newW = w / scale;
+                float newH = h / scale;
+
+                // centrē mazāko kvadrātu
+                float changeX = (w - newW) / 2f;
+                float changeY = (h - newH) / 2f;
+
+                // rekursija ar atjaunotiem parametriem
+                DrawSquareRecursion(x + changeX, y + changeY, newW, newH, currentDepth - 1, initialDepth);
+
             }
         }
-
-
-
     }
-
-
-
-
 }
